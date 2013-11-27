@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<form string="Product Tree Node">
+    <label name="name" />
+    <field name="name" />
+    <label name="parent" />
+    <field name="parent" />
+    <label name="slug" />
+    <field name="slug" />
+    <label name="type_" />
+    <field name="type_" />
+    <label name="products_per_page" />
+    <field name="products_per_page" />
+    <notebook colspan="4">
+        <page string="Children" id="children">
+            <field name="children" />
+        </page>
+    </notebook>
+</form>

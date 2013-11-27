@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<tree string="Product Tree Nodes">
+    <field name="slug" />
+    <field name="name" />
+</tree>
