@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tryton>
+    <data>
+
+        <record id="nodes" model="nereid.url_rule">
+            <field name="rule">/nodes/&lt;int:active_id&gt;/&lt;slug&gt;/&lt;int:page&gt;</field>
+            <field name="endpoint">product.tree_node.render</field>
+            <field name="sequence" eval="140" />
+            <field name="http_method_get" eval="True"/>
+            <field name="url_map" ref="nereid.default_url_map" />
+        </record>
+
+        <record id="nodes_without_page" model="nereid.url_rule">
+            <field name="rule">/nodes/&lt;int:active_id&gt;/&lt;slug&gt;/</field>
+            <field name="endpoint">product.tree_node.render</field>
+            <field name="sequence" eval="140" />
+            <field name="http_method_get" eval="True"/>
+            <field name="url_map" ref="nereid.default_url_map" /> 
+        </record> 
+      
+    </data>
+</tryton>
