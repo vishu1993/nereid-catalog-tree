@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tree string="Product Tree Nodes" keyword_open="1">
+    <field name="name" />
+    <field name="parent" tree_invisible="1" />
+    <field name="children" tree_invisible="1" />
+</tree>
