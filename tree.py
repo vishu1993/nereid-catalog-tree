@@ -119,6 +119,7 @@ class Node(ModelSQL, ModelView):
             ('displayed_on_eshop', '=', True),
             ('nodes.left', '>=', self.left),
             ('nodes.right', '<=', self.right),
+            ('template.active', '=', True),
         ], page=page, per_page=self.products_per_page)
 
         return render_template(

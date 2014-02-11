@@ -99,9 +99,7 @@ class TestTree(NereidTestCase):
         self.Locale = POOL.get('nereid.website.locale')
 
         self.templates = {
-            'catalog/node.html':
-            '{% for product in products %}'
-            '{{ product.name }},{% endfor %}'
+            'catalog/node.html': '{{ products|length }}'
         }
 
     def test_0005_test_view(self):
@@ -321,29 +319,7 @@ class TestTree(NereidTestCase):
                 )
                 rv = c.get(url)
                 self.assertEqual(rv.status_code, 200)
-                response = rv.data
-
-                response_list = response.split(',')
-
-                self.assertTrue(
-                    'Product-1' in response_list
-                )
-                self.assertTrue(
-                    'Product-2' in response_list
-                )
-                self.assertFalse(
-                    'Product-3' in response_list
-                )
-                #TODO: since there is a ',' at the end
-                #of the product because of the way its
-                #formatted, there is one empty entry in
-                #the list, which needs to be checked
-                #and ergo, i am checking the length of the
-                #response list to be 3, and this shall
-                #keep checking for 3, since node3 shouldnt
-                #appear here anyway, cuz the show on shop
-                #is false
-                self.assertEqual(len(response_list), 3)
+                self.assertEqual(rv.data, '2')
 
     def test_0040_create_product_with_parent_as_itself(self):
         """
@@ -384,6 +360,56 @@ class TestTree(NereidTestCase):
             self.assertRaises(UserError, Node.write, [node1], {
                 'parent': node1
             })
+
+    def test_0050_product_template_disabled(self):
+        """
+        Ensure that the products are not listed when the template is
+        disabled
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            uom, = self.Uom.search([], limit=1)
+
+            values1 = {
+                'name': 'Product-1',
+                'category': self.category.id,
+                'type': 'goods',
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [{
+                        'uri': 'product-1',
+                        'displayed_on_eshop': True
+                    }])
+                ]
+            }
+
+            template1, = self.Template.create([values1])
+
+            node1, = Node.create([{
+                'name': 'Node1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'products': [('set', [template1.id])]
+            }])
+
+            app = self.get_app()
+
+            with app.test_client() as c:
+                rv = c.get('nodes/%d/_/1' % node1.id)
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, '1')
+
+            template1.active = False
+            template1.save()
+
+            with app.test_client() as c:
+                rv = c.get('nodes/%d/_/1' % node1.id)
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, '0')
 
 
 def suite():
