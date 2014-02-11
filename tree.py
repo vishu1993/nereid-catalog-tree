@@ -62,7 +62,7 @@ class Node(ModelSQL, ModelView):
     right = fields.Integer('Right', select=True)
     products = fields.Many2Many(
         'product.product-product.tree_node',
-        'node', 'product', 'Products'
+        'node', 'product', 'Products',
     )
     products_per_page = fields.Integer('Products per Page')
 
@@ -96,6 +96,42 @@ class Node(ModelSQL, ModelView):
     @staticmethod
     def default_products_per_page():
         return 10
+
+    def get_products(self, page=1, per_page=None):
+        """
+        Return a pagination object of active records of products in the tree
+        and all of its branches.
+
+        A pagination object is returned so that the user can implement
+        interfaces like infinite scroll which will need advance information of
+        the number of pages that will exist.
+
+        It is recommended to use this method instead of directly reading from
+        the products (many2many) field for scalability. In addition, if a
+        product is made inactive or not displayed on eshop, it will be
+        overlooked by the many2many field.
+
+        Example usage::
+
+            {% for product in node.get_products() %}
+            <li>{{ product.name }}</li>
+            {% endfor %}
+
+        :param page: The page for which the products have to be displayed
+        :param per_page: The number of products to be returned in each page
+        """
+        Product = Pool().get('product.product')
+
+        if per_page is None:
+            per_page = self.products_per_page
+
+        products = Pagination(Product, [
+            ('displayed_on_eshop', '=', True),
+            ('nodes.left', '>=', self.left),
+            ('nodes.right', '<=', self.right),
+            ('template.active', '=', True),
+        ], page=page, per_page=per_page)
+        return products
 
     def render(self, slug=None, page=1):
         """
@@ -136,6 +172,10 @@ class ProductNodeRelationship(ModelSQL):
 
     product = fields.Many2One(
         'product.product', 'Product',
+        domain=[
+            ('displayed_on_eshop', '=', True),
+            ('template.active', '=', True),
+        ],
         ondelete='CASCADE', select=True, required=True,
     )
     node = fields.Many2One(
