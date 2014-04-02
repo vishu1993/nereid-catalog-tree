@@ -298,7 +298,6 @@ class TestTree(NereidTestCase):
                 'name': 'Node3',
                 'type_': 'catalog',
                 'slug': 'node3',
-                'products': [('set', [template3.id])]
             }])
 
             Node.write([node2], {
@@ -403,6 +402,9 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 self.assertEqual(rv.data, '1')
 
+            self.assertEqual(node1.get_products().count, 1)
+            self.assertEqual(len(node1.products), 1)
+
             template1.active = False
             template1.save()
 
@@ -410,6 +412,9 @@ class TestTree(NereidTestCase):
                 rv = c.get('nodes/%d/_/1' % node1.id)
                 self.assertEqual(rv.status_code, 200)
                 self.assertEqual(rv.data, '0')
+
+            self.assertEqual(node1.get_products().count, 0)
+            self.assertEqual(len(node1.products), 1)
 
 
 def suite():
