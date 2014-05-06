@@ -9,7 +9,7 @@
 
 '''
 
-from nereid import abort, render_template
+from nereid import abort, render_template, route
 from nereid.helpers import slugify
 from nereid.contrib.pagination import Pagination
 
@@ -133,6 +133,8 @@ class Node(ModelSQL, ModelView):
         ], page=page, per_page=per_page)
         return products
 
+    @route('/nodes/<int:active_id>/<slug>/<int:page>')
+    @route('/nodes/<int:active_id>/<slug>')
     def render(self, slug=None, page=1):
         """
         Renders a page of products in the tree and all of its branches
