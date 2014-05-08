@@ -97,6 +97,10 @@ class Node(ModelSQL, ModelView):
     def default_products_per_page():
         return 10
 
+    @staticmethod
+    def default_type_():
+        return 'catalog'
+
     def get_products(self, page=1, per_page=None):
         """
         Return a pagination object of active records of products in the tree
