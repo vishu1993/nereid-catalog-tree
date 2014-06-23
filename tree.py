@@ -57,7 +57,10 @@ class Node(ModelSQL, ModelView):
         domain=[('type_', '=', Eval('type_'))],
         left='left', right='right', ondelete="RESTRICT",
     )
-    children = fields.One2Many('product.tree_node', 'parent', 'Children')
+    children = fields.One2Many(
+        'product.tree_node', 'parent', 'Children',
+        depends=['id'], add_remove=[('id', '!=', Eval('id'))],
+    )
     left = fields.Integer('Left', select=True)
     right = fields.Integer('Right', select=True)
     products = fields.Many2Many(
