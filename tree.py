@@ -209,6 +209,23 @@ class Website:
         'product.tree_node', 'Upcoming Products Node',
         domain=[('type_', '=', 'catalog')]
     )
+    root_tree_node = fields.Many2One(
+        "product.tree_node", 'Root Tree Node', select=True, states={
+            "required": Eval('root_navigation_model') == 'product.tree_node',
+            "invisible": Eval('root_navigation_model') != 'product.tree_node',
+        }
+    )
+
+    @classmethod
+    def get_root_navigation_model(cls):
+        """
+        Add catalog tree as a alternative way to manage
+        """
+        rv = super(Website, cls).get_root_navigation_model()
+        item = ('product.tree_node', 'Product Tree Node')
+        if item not in rv:
+            rv.append(item)
+        return rv
 
 
 class WebsiteTreeNode(ModelSQL):
