@@ -10,6 +10,8 @@
     <field name="type_" />
     <label name="products_per_page" />
     <field name="products_per_page" />
+    <label name="sequence" />
+    <field name="sequence" />
     <notebook colspan="4">
         <page string="Children" id="children">
             <field name="children" />

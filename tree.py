@@ -68,6 +68,12 @@ class Node(ModelSQL, ModelView):
         'node', 'product', 'Products',
     )
     products_per_page = fields.Integer('Products per Page')
+    sequence = fields.Integer('Sequence')
+
+    @classmethod
+    def __setup__(cls):
+        super(Node, cls).__setup__()
+        cls._order.insert(0, ('sequence', 'ASC'))
 
     @classmethod
     def validate(cls, nodes):
