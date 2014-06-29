@@ -69,6 +69,7 @@ class Node(ModelSQL, ModelView):
     )
     products_per_page = fields.Integer('Products per Page')
     sequence = fields.Integer('Sequence')
+    description = fields.Text('Description')
 
     @classmethod
     def __setup__(cls):
