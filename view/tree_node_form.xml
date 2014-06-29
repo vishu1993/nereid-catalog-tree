@@ -16,8 +16,13 @@
         <page string="Children" id="children">
             <field name="children" />
         </page>
-         <page string="Description" id="description">
+        <page string="Description" id="description">
             <field name="description" />
+        </page>
+        <page string="Image" id="tree-node-image">
+            <field name="image" />
+            <newline/>
+            <field name="image_preview" widget="image" colspan="4" height="200"/>
         </page>
     </notebook>
 </form>
