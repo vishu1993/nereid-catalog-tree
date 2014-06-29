@@ -70,6 +70,12 @@ class Node(ModelSQL, ModelView):
     products_per_page = fields.Integer('Products per Page')
     sequence = fields.Integer('Sequence')
     description = fields.Text('Description')
+    image = fields.Many2One(
+        'nereid.static.file', 'Image',
+    )
+    image_preview = fields.Function(
+        fields.Binary('Image Preview'), 'get_image_preview'
+    )
 
     @classmethod
     def __setup__(cls):
@@ -173,6 +179,11 @@ class Node(ModelSQL, ModelView):
         return render_template(
             'catalog/node.html', products=products, node=self
         )
+
+    def get_image_preview(self, name=None):
+        if self.image:
+            return self.image.file_binary
+        return None
 
 
 class ProductNodeRelationship(ModelSQL):
