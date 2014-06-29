@@ -16,5 +16,8 @@
         <page string="Children" id="children">
             <field name="children" />
         </page>
+         <page string="Description" id="description">
+            <field name="description" />
+        </page>
     </notebook>
 </form>
