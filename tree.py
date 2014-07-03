@@ -4,7 +4,7 @@
 
     Products catalogue on a tree
 
-    :copyright: (c) 2013 by Openlabs Technologies & Consulting (P) Ltd.
+    :copyright: (c) 2013-2014 by Openlabs Technologies & Consulting (P) Ltd.
     :license: GPLv3, see LICENSE for more details
 
 '''
@@ -184,6 +184,10 @@ class Node(ModelSQL, ModelView):
         if self.image:
             return self.image.file_binary
         return None
+
+    @staticmethod
+    def default_type_():
+        return 'catalog'
 
 
 class ProductNodeRelationship(ModelSQL):
