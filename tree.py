@@ -45,8 +45,7 @@ class Node(ModelSQL, ModelView):
 
     name = fields.Char('Name', required=True, select=True, translate=True)
     slug = fields.Char(
-        'Slug', depends=['name'], on_change_with=['name', 'slug', 'parent'],
-        required=True, select=True, translate=True
+        'Slug', depends=['name'], required=True, select=True, translate=True
     )
     type_ = fields.Selection([
         ('catalog', 'Catalog'),
@@ -87,6 +86,7 @@ class Node(ModelSQL, ModelView):
         super(Node, cls).validate(nodes)
         cls.check_recursion(nodes, rec_name='name')
 
+    @fields.depends('name', 'slug', 'parent')
     def on_change_with_slug(self):
         """
         On change the name and slug, ensure that the slug field is auto
