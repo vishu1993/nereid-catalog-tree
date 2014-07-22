@@ -74,8 +74,8 @@ class TestTree(NereidTestCase):
             'application_user': USER,
             'default_locale': self.locale_en_us.id,
             'guest_user': guest_user,
-            'categories': [('set', [self.category.id])],
-            'currencies': [('set', [usd.id])],
+            'categories': [('add', [self.category.id])],
+            'currencies': [('add', [usd.id])],
         }])
 
     def setUp(self):
@@ -145,7 +145,7 @@ class TestTree(NereidTestCase):
             node1, = Node.create([{
                 'name': 'Node1',
                 'slug': 'node1',
-                'products': [('set', [template1.id])]
+                'products': [('add', [template1.id])]
             }])
 
             self.assert_(node1)
@@ -199,7 +199,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('set', [template1.id])]
+                'products': [('add', [template1.id])]
             }])
 
             self.assert_(node1)
@@ -208,7 +208,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node2',
                 'type_': 'catalog',
                 'slug': 'node2',
-                'products': [('set', [template2.id])]
+                'products': [('add', [template2.id])]
             }])
 
             self.assert_(node2)
@@ -282,7 +282,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('set', [template1.id])]
+                'products': [('add', [template1.id])]
             }])
 
             self.assert_(node1)
@@ -291,7 +291,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node2',
                 'type_': 'catalog',
                 'slug': 'node2',
-                'products': [('set', [template2.id])]
+                'products': [('add', [template2.id])]
             }])
 
             self.assert_(node2)
@@ -354,7 +354,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('set', [template1.id])]
+                'products': [('add', [template1.id])]
             }])
 
             self.assert_(node1)
@@ -394,7 +394,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('set', [template1.id])]
+                'products': [('add', [template1.id])]
             }])
 
             app = self.get_app()
