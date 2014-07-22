@@ -2,7 +2,7 @@
 """
 test_tree
 
-:copyright: (c) 2013 by Openlabs Technologies & Consulting (P) Limited
+:copyright: (c) 2013-2014 by Openlabs Technologies & Consulting (P) Limited
 :license: BSD, see LICENSE for more details.
 """
 from decimal import Decimal
@@ -142,14 +142,16 @@ class TestTree(NereidTestCase):
 
             template1, = self.Template.create([values1])
 
-            node1 = Node.create([{
+            node1, = Node.create([{
                 'name': 'Node1',
-                'type_': 'catalog',
                 'slug': 'node1',
                 'products': [('set', [template1.id])]
             }])
 
             self.assert_(node1)
+
+            # Check if default tree node type is 'catalog'
+            self.assertEqual(node1.type_, 'catalog')
 
     def test_0020_create_product_node_with_children(self):
         """
