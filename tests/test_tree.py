@@ -25,6 +25,8 @@ class TestTree(NereidTestCase):
         """
         Setup defaults
         """
+        Node = POOL.get('product.tree_node')
+
         usd, = self.Currency.create([{
             'name': 'US Dollar',
             'code': 'USD',
@@ -66,6 +68,10 @@ class TestTree(NereidTestCase):
             'language': en_us.id,
             'currency': usd.id
         }])
+        default_node, = Node.create([{
+            'name': 'root',
+            'slug': 'root',
+        }])
 
         self.Site.create([{
             'name': 'localhost',
@@ -74,8 +80,8 @@ class TestTree(NereidTestCase):
             'application_user': USER,
             'default_locale': self.locale_en_us.id,
             'guest_user': guest_user,
-            'categories': [('add', [self.category.id])],
             'currencies': [('add', [usd.id])],
+            'root_tree_node': default_node,
         }])
 
     def setUp(self):
