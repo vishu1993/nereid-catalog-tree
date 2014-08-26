@@ -75,6 +75,7 @@ class Node(ModelSQL, ModelView):
     image_preview = fields.Function(
         fields.Binary('Image Preview'), 'get_image_preview'
     )
+    active = fields.Boolean('Active', select=True)
 
     @classmethod
     def __setup__(cls):
@@ -188,6 +189,10 @@ class Node(ModelSQL, ModelView):
     @staticmethod
     def default_type_():
         return 'catalog'
+
+    @staticmethod
+    def default_active():
+        return True
 
 
 class ProductNodeRelationship(ModelSQL):
