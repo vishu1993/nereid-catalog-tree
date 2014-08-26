@@ -12,6 +12,8 @@
     <field name="products_per_page" />
     <label name="sequence" />
     <field name="sequence" />
+    <label name="active" />
+    <field name="active" />
     <notebook colspan="4">
         <page string="Children" id="children">
             <field name="children" />

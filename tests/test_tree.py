@@ -158,6 +158,8 @@ class TestTree(NereidTestCase):
 
             # Check if default tree node type is 'catalog'
             self.assertEqual(node1.type_, 'catalog')
+            # Check if node1 is active by default
+            self.assertTrue(node1.active)
 
     def test_0020_create_product_node_with_children(self):
         """
