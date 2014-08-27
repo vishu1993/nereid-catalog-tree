@@ -76,6 +76,10 @@ class Node(ModelSQL, ModelView):
         fields.Binary('Image Preview'), 'get_image_preview'
     )
     active = fields.Boolean('Active', select=True)
+    display = fields.Selection([
+        ('product.product', 'Product Variants'),
+        ('product.template', 'Product Templates'),
+    ], 'Display', required=True)
 
     @classmethod
     def __setup__(cls):
@@ -138,16 +142,28 @@ class Node(ModelSQL, ModelView):
         :param per_page: The number of products to be returned in each page
         """
         Product = Pool().get('product.product')
+        ProductTemplate = Pool().get('product.template')
 
         if per_page is None:
             per_page = self.products_per_page
 
-        products = Pagination(Product, [
-            ('displayed_on_eshop', '=', True),
-            ('nodes.left', '>=', self.left),
-            ('nodes.right', '<=', self.right),
-            ('template.active', '=', True),
-        ], page=page, per_page=per_page)
+        nodes = self.search([
+            ('left', '>=', self.left),
+            ('right', '<=', self.right),
+        ])
+
+        if self.display == 'product.product':
+            products = Pagination(Product, [
+                ('displayed_on_eshop', '=', True),
+                ('nodes', 'in', map(int, nodes)),
+                ('template.active', '=', True),
+            ], page=page, per_page=per_page)
+        else:
+            products = Pagination(ProductTemplate, [
+                ('products.displayed_on_eshop', '=', True),
+                ('products.nodes', 'in', map(int, nodes)),
+                ('active', '=', True),
+            ], page=page, per_page=per_page)
         return products
 
     @route('/nodes/<int:active_id>/<slug>/<int:page>')
@@ -159,7 +175,6 @@ class Node(ModelSQL, ModelView):
         :param slug: slug of the browse node to be shown
         :param page: page of the products to be displayed
         """
-        Product = Pool().get('product.product')
 
         try:
             self.slug
@@ -170,12 +185,9 @@ class Node(ModelSQL, ModelView):
             # Display only catalog nodes
             abort(403)
 
-        products = Pagination(Product, [
-            ('displayed_on_eshop', '=', True),
-            ('nodes.left', '>=', self.left),
-            ('nodes.right', '<=', self.right),
-            ('template.active', '=', True),
-        ], page=page, per_page=self.products_per_page)
+        products = self.get_products(
+            page=page, per_page=self.products_per_page
+        )
 
         return render_template(
             'catalog/node.html', products=products, node=self
@@ -193,6 +205,10 @@ class Node(ModelSQL, ModelView):
     @staticmethod
     def default_active():
         return True
+
+    @staticmethod
+    def default_display():
+        return 'product.product'
 
 
 class ProductNodeRelationship(ModelSQL):
