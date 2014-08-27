@@ -160,6 +160,8 @@ class TestTree(NereidTestCase):
             self.assertEqual(node1.type_, 'catalog')
             # Check if node1 is active by default
             self.assertTrue(node1.active)
+            # Check if default display is product variant
+            self.assertEqual(node1.display, 'product.product')
 
     def test_0020_create_product_node_with_children(self):
         """
@@ -264,6 +266,9 @@ class TestTree(NereidTestCase):
                     ('create', [{
                         'uri': 'product-2',
                         'displayed_on_eshop': True
+                    }, {
+                        'uri': 'product-21',
+                        'displayed_on_eshop': True
                     }])
                 ]
             }
@@ -290,7 +295,7 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', [template1.id])]
+                'products': [('add', template1.products)]
             }])
 
             self.assert_(node1)
@@ -299,7 +304,8 @@ class TestTree(NereidTestCase):
                 'name': 'Node2',
                 'type_': 'catalog',
                 'slug': 'node2',
-                'products': [('add', [template2.id])]
+                'display': 'product.template',
+                'products': [('add', template2.products)]
             }])
 
             self.assert_(node2)
@@ -328,7 +334,18 @@ class TestTree(NereidTestCase):
                 )
                 rv = c.get(url)
                 self.assertEqual(rv.status_code, 200)
-                self.assertEqual(rv.data, '2')
+                # Test is if there are 3 products.
+                # 1 from node1 and 2 from node2
+                self.assertEqual(rv.data, '3')
+
+                url = 'nodes/{0}/{1}/{2}'.format(
+                    node2.id, node2.slug, 1
+                )
+                rv = c.get(url)
+                self.assertEqual(rv.status_code, 200)
+                # Test if products length is 1 as display of
+                # node2 is set to 'product.template'
+                self.assertEqual(rv.data, '1')
 
     def test_0040_create_product_with_parent_as_itself(self):
         """
