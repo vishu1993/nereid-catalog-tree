@@ -69,6 +69,21 @@ and license terms.
     <record model="ir.action.act_window" id="act_tree_node_list">
         <field name="name">Tree Nodes</field>
         <field name="res_model">product.tree_node</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record model="ir.action.act_window.domain" id="action_tree_node_view_domain_active">
+        <field name="name">Active</field>
+        <field name="sequence" eval="10"/>
+        <field name="domain">[('active', '=', True)]</field>
+        <field name="act_window" ref="act_tree_node_list"/>
+    </record>
+
+    <record model="ir.action.act_window.domain" id="action_tree_node_view_domain_disabled">
+        <field name="name">Disabled</field>
+        <field name="sequence" eval="10"/>
+        <field name="domain">[('active', '=', False)]</field>
+        <field name="act_window" ref="act_tree_node_list"/>
     </record>
 
     <record model="ir.action.act_window.view" id="act_tree_node_list_view1">
