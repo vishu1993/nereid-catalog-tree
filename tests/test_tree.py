@@ -68,7 +68,7 @@ class TestTree(NereidTestCase):
             'language': en_us.id,
             'currency': usd.id
         }])
-        default_node, = Node.create([{
+        self.default_node, = Node.create([{
             'name': 'root',
             'slug': 'root',
         }])
@@ -81,7 +81,7 @@ class TestTree(NereidTestCase):
             'default_locale': self.locale_en_us.id,
             'guest_user': guest_user,
             'currencies': [('add', [usd.id])],
-            'root_tree_node': default_node,
+            'root_tree_node': self.default_node,
         }])
 
     def setUp(self):
@@ -105,7 +105,9 @@ class TestTree(NereidTestCase):
         self.Locale = POOL.get('nereid.website.locale')
 
         self.templates = {
-            'catalog/node.html': '{{ products|length }}'
+            'catalog/node.html':
+            '{{ products|length }}||' +
+            '{{ make_tree_crumbs(node=node)|safe|escape }}'
         }
 
     def test_0005_test_view(self):
@@ -336,7 +338,7 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test is if there are 3 products.
                 # 1 from node1 and 2 from node2
-                self.assertEqual(rv.data, '3')
+                self.assertEqual(rv.data[0], '3')
 
                 url = 'nodes/{0}/{1}/{2}'.format(
                     node2.id, node2.slug, 1
@@ -345,7 +347,7 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test if products length is 1 as display of
                 # node2 is set to 'product.template'
-                self.assertEqual(rv.data, '1')
+                self.assertEqual(rv.data[0], '1')
 
     def test_0040_create_product_with_parent_as_itself(self):
         """
@@ -427,7 +429,7 @@ class TestTree(NereidTestCase):
             with app.test_client() as c:
                 rv = c.get('nodes/%d/_/1' % node1.id)
                 self.assertEqual(rv.status_code, 200)
-                self.assertEqual(rv.data, '1')
+                self.assertEqual(rv.data[0], '1')
 
             self.assertEqual(node1.get_products().count, 1)
             self.assertEqual(len(node1.products), 1)
@@ -438,10 +440,43 @@ class TestTree(NereidTestCase):
             with app.test_client() as c:
                 rv = c.get('nodes/%d/_/1' % node1.id)
                 self.assertEqual(rv.status_code, 200)
-                self.assertEqual(rv.data, '0')
+                self.assertEqual(rv.data[0], '0')
 
             self.assertEqual(node1.get_products().count, 0)
             self.assertEqual(len(node1.products), 1)
+
+    def test_0060_make_tree_crumbs(self):
+        """
+        Test to get breadcrumbs on node template
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            app = self.get_app()
+
+            parent_node, = Node.create([{
+                'name': 'Node1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'parent': self.default_node,
+            }])
+
+            child_node, = Node.create([{
+                'name': 'Node2',
+                'type_': 'catalog',
+                'slug': 'node2',
+                'parent': parent_node,
+            }])
+
+            with app.test_client() as c:
+                rv = c.get('nodes/%d/node2' % child_node.id)
+                self.assertEqual(
+                    rv.data[3:],
+                    "[('/', 'Home'), ('/nodes/1/root', u'root'), " +
+                    "('/nodes/2/node1', u'Node1'), " +
+                    "('/nodes/3/node2', u'Node2')]"
+                )
 
 
 def suite():

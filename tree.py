@@ -9,14 +9,15 @@
 
 '''
 
-from nereid import abort, render_template, route
-from nereid.helpers import slugify
+from nereid import abort, render_template, route, url_for
+from nereid.helpers import slugify, context_processor
 from nereid.contrib.pagination import Pagination
 
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.exceptions import UserError
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+
 
 __all__ = [
     'Product', 'Node', 'ProductNodeRelationship',
@@ -209,6 +210,27 @@ class Node(ModelSQL, ModelView):
     @staticmethod
     def default_display():
         return 'product.product'
+
+    @classmethod
+    @context_processor('make_tree_crumbs')
+    def make_tree_crumbs(cls, node, add_home=True):
+        """
+        Make breadcrumb for tree node.
+        """
+        leaf = cls(int(node))
+        crumbs = []
+        while leaf:
+            crumbs.append(
+                (url_for(
+                    'product.tree_node.render',
+                    active_id=leaf.id, slug=leaf.slug
+                ), leaf.name)
+            )
+            leaf = leaf.parent
+        if add_home:
+            crumbs.append((url_for('nereid.website.home'), 'Home'))
+        crumbs.reverse()
+        return crumbs
 
 
 class ProductNodeRelationship(ModelSQL):
