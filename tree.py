@@ -12,6 +12,7 @@
 from nereid import abort, render_template, route, url_for
 from nereid.helpers import slugify, context_processor
 from nereid.contrib.pagination import Pagination
+from nereid.contrib.sitemap import SitemapIndex, SitemapSection
 
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.exceptions import UserError
@@ -231,6 +232,31 @@ class Node(ModelSQL, ModelView):
             crumbs.append((url_for('nereid.website.home'), 'Home'))
         crumbs.reverse()
         return crumbs
+
+    @classmethod
+    @route('/sitemaps/tree-index.xml')
+    def sitemap_index(cls):
+        index = SitemapIndex(cls, [
+            ('active', '=', True),
+        ])
+        return index.render()
+
+    @classmethod
+    @route('/sitemaps/tree-<int:page>.xml')
+    def sitemap(cls, page):
+        sitemap_section = SitemapSection(
+            cls, [
+                ('active', '=', True),
+            ], page
+        )
+        sitemap_section.changefreq = 'daily'
+        return sitemap_section.render()
+
+    def get_absolute_url(self, **kwargs):
+        return url_for(
+            'product.tree_node.render', active_id=self.id,
+            slug=self.slug, **kwargs
+        )
 
 
 class ProductNodeRelationship(ModelSQL):

@@ -8,6 +8,7 @@ test_tree
 from decimal import Decimal
 import unittest
 
+from lxml import objectify
 import trytond.tests.test_tryton
 from trytond.tests.test_tryton import POOL, USER, DB_NAME, CONTEXT, \
     test_view, test_depends
@@ -477,6 +478,70 @@ class TestTree(NereidTestCase):
                     "('/nodes/2/node1', u'Node1'), " +
                     "('/nodes/3/node2', u'Node2')]"
                 )
+
+    def test_0070_tree_sitemap_index(self):
+        """
+        Assert that the sitemap index returns 1 result
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            uom, = self.Uom.search([], limit=1)
+            app = self.get_app()
+
+            values1 = {
+                'name': 'Product-1',
+                'category': self.category.id,
+                'type': 'goods',
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [{
+                        'uri': 'product-1',
+                        'displayed_on_eshop': True
+                    }])
+                ]
+            }
+
+            values2 = {
+                'name': 'Product-2',
+                'category': self.category.id,
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [{
+                        'uri': 'product-2',
+                        'displayed_on_eshop': True
+                    }])
+                ]
+            }
+
+            template1, template2 = self.Template.create([values1, values2])
+
+            node1, = Node.create([{
+                'name': 'Node1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'products': [('add', [template1.id, template2.id])]
+            }])
+
+            self.assert_(node1)
+
+            with app.test_client() as c:
+                rv = c.get('/sitemaps/tree-index.xml')
+                xml = objectify.fromstring(rv.data)
+                self.assertTrue(xml.tag.endswith('sitemapindex'))
+                self.assertEqual(len(xml.getchildren()), 1)
+
+                rv = c.get(
+                    xml.sitemap.loc.pyval.split('localhost/', 1)[-1]
+                )
+                xml = objectify.fromstring(rv.data)
+                self.assertTrue(xml.tag.endswith('urlset'))
+                self.assertEqual(len(xml.getchildren()), 2)
 
 
 def suite():
