@@ -9,14 +9,16 @@
 
 '''
 
-from nereid import abort, render_template, route
-from nereid.helpers import slugify
+from nereid import abort, render_template, route, url_for
+from nereid.helpers import slugify, context_processor
 from nereid.contrib.pagination import Pagination
+from nereid.contrib.sitemap import SitemapIndex, SitemapSection
 
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.exceptions import UserError
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+
 
 __all__ = [
     'Product', 'Node', 'ProductNodeRelationship',
@@ -76,6 +78,10 @@ class Node(ModelSQL, ModelView):
         fields.Binary('Image Preview'), 'get_image_preview'
     )
     active = fields.Boolean('Active', select=True)
+    display = fields.Selection([
+        ('product.product', 'Product Variants'),
+        ('product.template', 'Product Templates'),
+    ], 'Display', required=True)
 
     @classmethod
     def __setup__(cls):
@@ -138,16 +144,28 @@ class Node(ModelSQL, ModelView):
         :param per_page: The number of products to be returned in each page
         """
         Product = Pool().get('product.product')
+        ProductTemplate = Pool().get('product.template')
 
         if per_page is None:
             per_page = self.products_per_page
 
-        products = Pagination(Product, [
-            ('displayed_on_eshop', '=', True),
-            ('nodes.left', '>=', self.left),
-            ('nodes.right', '<=', self.right),
-            ('template.active', '=', True),
-        ], page=page, per_page=per_page)
+        nodes = self.search([
+            ('left', '>=', self.left),
+            ('right', '<=', self.right),
+        ])
+
+        if self.display == 'product.product':
+            products = Pagination(Product, [
+                ('displayed_on_eshop', '=', True),
+                ('nodes', 'in', map(int, nodes)),
+                ('template.active', '=', True),
+            ], page=page, per_page=per_page)
+        else:
+            products = Pagination(ProductTemplate, [
+                ('products.displayed_on_eshop', '=', True),
+                ('products.nodes', 'in', map(int, nodes)),
+                ('active', '=', True),
+            ], page=page, per_page=per_page)
         return products
 
     @route('/nodes/<int:active_id>/<slug>/<int:page>')
@@ -159,7 +177,6 @@ class Node(ModelSQL, ModelView):
         :param slug: slug of the browse node to be shown
         :param page: page of the products to be displayed
         """
-        Product = Pool().get('product.product')
 
         try:
             self.slug
@@ -170,12 +187,9 @@ class Node(ModelSQL, ModelView):
             # Display only catalog nodes
             abort(403)
 
-        products = Pagination(Product, [
-            ('displayed_on_eshop', '=', True),
-            ('nodes.left', '>=', self.left),
-            ('nodes.right', '<=', self.right),
-            ('template.active', '=', True),
-        ], page=page, per_page=self.products_per_page)
+        products = self.get_products(
+            page=page, per_page=self.products_per_page
+        )
 
         return render_template(
             'catalog/node.html', products=products, node=self
@@ -193,6 +207,56 @@ class Node(ModelSQL, ModelView):
     @staticmethod
     def default_active():
         return True
+
+    @staticmethod
+    def default_display():
+        return 'product.product'
+
+    @classmethod
+    @context_processor('make_tree_crumbs')
+    def make_tree_crumbs(cls, node, add_home=True):
+        """
+        Make breadcrumb for tree node.
+        """
+        leaf = cls(int(node))
+        crumbs = []
+        while leaf:
+            crumbs.append(
+                (url_for(
+                    'product.tree_node.render',
+                    active_id=leaf.id, slug=leaf.slug
+                ), leaf.name)
+            )
+            leaf = leaf.parent
+        if add_home:
+            crumbs.append((url_for('nereid.website.home'), 'Home'))
+        crumbs.reverse()
+        return crumbs
+
+    @classmethod
+    @route('/sitemaps/tree-index.xml')
+    def sitemap_index(cls):
+        index = SitemapIndex(cls, [
+            ('active', '=', True),
+        ])
+        return index.render()
+
+    @classmethod
+    @route('/sitemaps/tree-<int:page>.xml')
+    def sitemap(cls, page):
+        sitemap_section = SitemapSection(
+            cls, [
+                ('active', '=', True),
+            ], page
+        )
+        sitemap_section.changefreq = 'daily'
+        return sitemap_section.render()
+
+    def get_absolute_url(self, **kwargs):
+        return url_for(
+            'product.tree_node.render', active_id=self.id,
+            slug=self.slug, **kwargs
+        )
 
 
 class ProductNodeRelationship(ModelSQL):
