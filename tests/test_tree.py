@@ -48,14 +48,6 @@ class TestTree(NereidTestCase):
                 'name': 'Guest User'
             }])
 
-            guest_user, = self.NereidUser.create([{
-                'party': party2.id,
-                'display_name': 'Guest User',
-                'email': 'guest@openlabs.co.in',
-                'password': 'password',
-                'company': company.id
-            }])
-
         self.category, = self.Category.create([{
             'name': 'CategoryA',
             'uri': 'category-1'
@@ -80,7 +72,6 @@ class TestTree(NereidTestCase):
             'company': company.id,
             'application_user': USER,
             'default_locale': self.locale_en_us.id,
-            'guest_user': guest_user,
             'currencies': [('add', [usd.id])],
             'root_tree_node': self.default_node,
         }])
@@ -542,6 +533,30 @@ class TestTree(NereidTestCase):
                 xml = objectify.fromstring(rv.data)
                 self.assertTrue(xml.tag.endswith('urlset'))
                 self.assertEqual(len(xml.getchildren()), 2)
+
+    def test_0080_node_menu_items(self):
+        """
+        Test to return record of tree node
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            app = self.get_app()
+
+            node, = Node.create([{
+                'name': 'Node1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'parent': self.default_node,
+            }])
+
+            with app.test_request_context('/'):
+                rv = node.get_menu_item(max_depth=10)
+
+            self.assertEqual(rv['link'], '/nodes/2/node1')
+
+            self.assertEqual(rv['title'], u'Node1')
 
 
 def suite():
