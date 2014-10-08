@@ -258,6 +258,21 @@ class Node(ModelSQL, ModelView):
             slug=self.slug, **kwargs
         )
 
+    def get_menu_item(self, max_depth):
+        """
+        Return dictionary with serialized node for menu item
+        {
+            title: <display name>,
+            link: <url>,
+            record: <instance of record> # if type_ is `record`
+        }
+        """
+        return {
+            'record': self,
+            'title': self.name,
+            'link': self.get_absolute_url(),
+        }
+
 
 class ProductNodeRelationship(ModelSQL):
     """
