@@ -7,6 +7,7 @@ test_tree
 """
 from decimal import Decimal
 import unittest
+from itertools import chain
 
 from lxml import objectify
 import trytond.tests.test_tryton
@@ -98,8 +99,8 @@ class TestTree(NereidTestCase):
 
         self.templates = {
             'catalog/node.html':
-            '{{ products|length }}||' +
-            '{{ make_tree_crumbs(node=node)|safe|escape }}'
+            '{{ products.count }}||' +
+            '{{ make_tree_crumbs(node=node)|join(", ", attribute="1") }}'
         }
 
     def test_0005_test_view(self):
@@ -145,7 +146,9 @@ class TestTree(NereidTestCase):
             node1, = Node.create([{
                 'name': 'Node1',
                 'slug': 'node1',
-                'products': [('add', [template1.id])]
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
             }])
 
             self.assert_(node1)
@@ -203,7 +206,9 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', [template1.id])]
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
             }])
 
             self.assert_(node1)
@@ -212,7 +217,9 @@ class TestTree(NereidTestCase):
                 'name': 'Node2',
                 'type_': 'catalog',
                 'slug': 'node2',
-                'products': [('add', [template2.id])]
+                'products': [('create', [
+                    {'product': product} for product in template2.products
+                ])]
             }])
 
             self.assert_(node2)
@@ -289,7 +296,9 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', template1.products)]
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
             }])
 
             self.assert_(node1)
@@ -299,7 +308,9 @@ class TestTree(NereidTestCase):
                 'type_': 'catalog',
                 'slug': 'node2',
                 'display': 'product.template',
-                'products': [('add', template2.products)]
+                'products': [('create', [
+                    {'product': product} for product in template2.products
+                ])]
             }])
 
             self.assert_(node2)
@@ -330,6 +341,10 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test is if there are 3 products.
                 # 1 from node1 and 2 from node2
+                self.assertEqual(
+                    node1.get_products().all_items(),
+                    list(template1.products + template2.products)
+                )
                 self.assertEqual(rv.data[0], '3')
 
                 url = 'nodes/{0}/{1}/{2}'.format(
@@ -339,6 +354,10 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test if products length is 1 as display of
                 # node2 is set to 'product.template'
+                self.assertEqual(
+                    node2.get_products().all_items(),
+                    [template2]
+                )
                 self.assertEqual(rv.data[0], '1')
 
     def test_0040_create_product_with_parent_as_itself(self):
@@ -373,7 +392,9 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', [template1.id])]
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
             }])
 
             self.assert_(node1)
@@ -413,7 +434,9 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', [template1.id])]
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
             }])
 
             app = self.get_app()
@@ -464,10 +487,7 @@ class TestTree(NereidTestCase):
             with app.test_client() as c:
                 rv = c.get('nodes/%d/node2' % child_node.id)
                 self.assertEqual(
-                    rv.data[3:],
-                    "[('/', 'Home'), ('/nodes/1/root', u'root'), " +
-                    "('/nodes/2/node1', u'Node1'), " +
-                    "('/nodes/3/node2', u'Node2')]"
+                    rv.data[3:], "Home, root, Node1, Node2"
                 )
 
     def test_0070_tree_sitemap_index(self):
@@ -516,7 +536,10 @@ class TestTree(NereidTestCase):
                 'name': 'Node1',
                 'type_': 'catalog',
                 'slug': 'node1',
-                'products': [('add', [template1.id, template2.id])]
+                'products': [('create', [
+                    {'product': product}
+                    for product in template1.products + template2.products
+                ])]
             }])
 
             self.assert_(node1)
@@ -554,9 +577,137 @@ class TestTree(NereidTestCase):
             with app.test_request_context('/'):
                 rv = node.get_menu_item(max_depth=10)
 
-            self.assertEqual(rv['link'], '/nodes/2/node1')
-
             self.assertEqual(rv['title'], u'Node1')
+
+    def test_0090_product_sequence(self):
+        """
+        Ensure that the products are displayed according to the sequence
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            uom, = self.Uom.search([], limit=1)
+
+            template1, = self.Template.create([{
+                'name': 'Product-1',
+                'category': self.category.id,
+                'type': 'goods',
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [
+                        {
+                            'uri': 'product-1',
+                            'displayed_on_eshop': True
+                        },
+                        {
+                            'uri': 'product-2',
+                            'displayed_on_eshop': True
+                        },
+                        {
+                            'uri': 'product-3',
+                            'displayed_on_eshop': True
+                        },
+                        {
+                            'uri': 'product-4',
+                            'displayed_on_eshop': True
+                        },
+                        {
+                            'uri': 'product-5',
+                            'displayed_on_eshop': True
+                        },
+                    ])
+                ]
+            }])
+
+            prod1, prod2, prod3, prod4, prod5 = template1.products
+
+            node1, node2 = Node.create([{
+                'name': 'Node 1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'products': [('create', [
+                    {'product': prod4, 'sequence': 10},
+                    {'product': prod1, 'sequence': 20},
+                ])]
+            }, {
+                'name': 'Node 2',
+                'type_': 'catalog',
+                'slug': 'node2',
+                'products': [('create', [
+                    {'product': prod3, 'sequence': 10},
+                    {'product': prod2, 'sequence': 20},
+                    {'product': prod1, 'sequence': 5},
+                ])]
+            }])
+
+            self.assert_(node1)
+            self.assert_(node2)
+
+            self.assertEqual(
+                node1.get_products().items(),
+                [prod4, prod1]
+            )
+            self.assertEqual(
+                node2.get_products().items(),
+                [prod1, prod3, prod2]
+            )
+
+    def test_0100_product_distinct(self):
+        """
+        Ensure that template pagination really works
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            uom, = self.Uom.search([], limit=1)
+
+            templates = self.Template.create([{
+                'name': 'Product-%s' % x,
+                'category': self.category.id,
+                'type': 'goods',
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [
+                        {
+                            'uri': 'product-%s-%s' % (x, v),
+                            'displayed_on_eshop': True
+                        } for v in xrange(0, 10)
+                    ])
+                ]
+            } for x in xrange(0, 10)])
+
+            node1, = Node.create([{
+                'name': 'Node 1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'display': 'product.product',
+                'products': [
+                    ('create', [
+                        {'product': prod.id, 'sequence': 10}
+                        for prod in chain(*[t.products for t in templates])
+                    ]
+                    )
+                ]
+            }])
+
+            self.assert_(node1)
+
+            self.assertEqual(len(node1.get_products().all_items()), 100)
+            self.assertEqual(node1.get_products().count, 100)
+            self.assertEqual(len(node1.get_products().items()), 10)
+            self.assertEqual(len(node1.get_products(page=10).items()), 10)
+
+            node1.display = 'product.template'
+            node1.save()
+
+            self.assertEqual(len(node1.get_products().all_items()), 10)
+            self.assertEqual(len(node1.get_products().items()), 10)
 
 
 def suite():
