@@ -11,13 +11,14 @@
 
 from nereid import abort, render_template, route, url_for
 from nereid.helpers import slugify, context_processor
-from nereid.contrib.pagination import Pagination
+from nereid.contrib.pagination import QueryPagination
 from nereid.contrib.sitemap import SitemapIndex, SitemapSection
 
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.exceptions import UserError
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+from sql import Literal
 
 
 __all__ = [
@@ -31,9 +32,9 @@ class Product:
     "Product extension for nereid"
     __name__ = 'product.product'
 
-    nodes = fields.Many2Many(
+    nodes = fields.One2Many(
         'product.product-product.tree_node',
-        'product', 'node', 'Tree Nodes'
+        'product', 'Tree Nodes'
     )
 
 
@@ -64,9 +65,9 @@ class Node(ModelSQL, ModelView):
     )
     left = fields.Integer('Left', select=True)
     right = fields.Integer('Right', select=True)
-    products = fields.Many2Many(
+    products = fields.One2Many(
         'product.product-product.tree_node',
-        'node', 'product', 'Products',
+        'node', 'Products',
     )
     products_per_page = fields.Integer('Products per Page')
     sequence = fields.Integer('Sequence')
@@ -120,6 +121,69 @@ class Node(ModelSQL, ModelView):
     def default_products_per_page():
         return 10
 
+    def _get_products(self):
+        """
+        Return a query based on the node settings. This is separated for
+        easy subclassing. The returned value would be a tuple with the
+        dollowing elements:
+
+            * The Model instance
+            * Select query instance
+            * The Table instance for the SQL Pagination
+
+        """
+        Node = Pool().get('product.tree_node')
+        Product = Pool().get('product.product')
+        ProductTemplate = Pool().get('product.template')
+        ProductNodeRelation = Pool().get('product.product-product.tree_node')
+
+        ProductTable = Product.__table__()
+        TemplateTable = ProductTemplate.__table__()
+        RelTable = ProductNodeRelation.__table__()
+        NodeTable = Node.__table__()
+
+        if self.display == 'product.product':
+            query = ProductTable.join(
+                TemplateTable,
+                condition=(TemplateTable.id == ProductTable.template)
+            ).join(
+                RelTable,
+                condition=(RelTable.product == ProductTable.id)
+            ).join(
+                NodeTable,
+                condition=(RelTable.node == NodeTable.id)
+            ).select(
+                where=(
+                    TemplateTable.active &
+                    ProductTable.displayed_on_eshop &
+                    (NodeTable.left >= Literal(self.left)) &
+                    (NodeTable.right <= Literal(self.right))
+                ),
+                order_by=RelTable.sequence.asc
+            )
+            return Product, query, ProductTable
+
+        elif self.display == 'product.template':
+            query = TemplateTable.join(
+                ProductTable,
+                condition=(TemplateTable.id == ProductTable.template)
+            ).join(
+                RelTable,
+                condition=(RelTable.product == ProductTable.id)
+            ).join(
+                NodeTable,
+                condition=(RelTable.node == NodeTable.id)
+            ).select(
+                where=(
+                    TemplateTable.active &
+                    ProductTable.displayed_on_eshop &
+                    (NodeTable.left >= Literal(self.left)) &
+                    (NodeTable.right <= Literal(self.right))
+                ),
+                order_by=RelTable.sequence.asc
+            )
+            return ProductTemplate, query, TemplateTable
+
     def get_products(self, page=1, per_page=None):
         """
         Return a pagination object of active records of products in the tree
@@ -143,30 +207,13 @@ class Node(ModelSQL, ModelView):
         :param page: The page for which the products have to be displayed
         :param per_page: The number of products to be returned in each page
         """
-        Product = Pool().get('product.product')
-        ProductTemplate = Pool().get('product.template')
-
         if per_page is None:
             per_page = self.products_per_page
 
-        nodes = self.search([
-            ('left', '>=', self.left),
-            ('right', '<=', self.right),
-        ])
-
-        if self.display == 'product.product':
-            products = Pagination(Product, [
-                ('displayed_on_eshop', '=', True),
-                ('nodes', 'in', map(int, nodes)),
-                ('template.active', '=', True),
-            ], page=page, per_page=per_page)
-        else:
-            products = Pagination(ProductTemplate, [
-                ('products.displayed_on_eshop', '=', True),
-                ('products.nodes', 'in', map(int, nodes)),
-                ('active', '=', True),
-            ], page=page, per_page=per_page)
-        return products
+        return QueryPagination(
+            *self._get_products(),
+            page=page, per_page=per_page
+        )
 
     @route('/nodes/<int:active_id>/<slug>/<int:page>')
     @route('/nodes/<int:active_id>/<slug>')
@@ -274,7 +321,7 @@ class Node(ModelSQL, ModelView):
         }
 
 
-class ProductNodeRelationship(ModelSQL):
+class ProductNodeRelationship(ModelSQL, ModelView):
     """
     This is the relation between a node in a tree
     and a product
@@ -294,6 +341,18 @@ class ProductNodeRelationship(ModelSQL):
         domain=[('type_', '=', 'catalog')],
         ondelete='CASCADE', select=True, required=True
     )
+    sequence = fields.Integer('Sequence', select=True, required=True)
+
+    @staticmethod
+    def default_sequence():
+        return 100
+
+    @classmethod
+    def __setup__(cls):
+        super(ProductNodeRelationship, cls).__setup__()
+        cls._order.insert(0, ('sequence', 'ASC'))
+
+        # TODO: Add unique constraint for product, node
 
 
 class Website:

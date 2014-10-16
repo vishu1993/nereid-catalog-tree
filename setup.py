@@ -4,6 +4,7 @@
 import sys
 import re
 import os
+import time
 import unittest
 import ConfigParser
 from setuptools import setup, Command
@@ -40,6 +41,38 @@ class SQLiteTest(Command):
         sys.exit(-1)
 
 
+class PostgresTest(Command):
+    """
+    Run the tests on Postgres.
+    """
+    description = "Run tests on Postgresql"
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from trytond.config import CONFIG
+        CONFIG['db_type'] = 'postgresql'
+        CONFIG['db_host'] = 'localhost'
+        CONFIG['db_port'] = 5432
+        CONFIG['db_user'] = 'postgres'
+        CONFIG['db_password'] = 'test'
+
+        os.environ['DB_NAME'] = 'test_' + str(int(time.time()))
+
+        from tests import suite
+        test_result = unittest.TextTestRunner(verbosity=3).run(suite())
+
+        if test_result.wasSuccessful():
+            sys.exit(0)
+        sys.exit(-1)
+
+
 config = ConfigParser.ConfigParser()
 config.readfp(open('tryton.cfg'))
 info = dict(config.items('tryton'))
@@ -52,6 +85,7 @@ minor_version = int(minor_version)
 
 requires = [
     'simplejson',
+    'trytond_nereid>=3.2.0.5,<3.3',
 ]
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res|webdav)(\W|$)', dep):
@@ -107,5 +141,6 @@ setup(
     test_loader='trytond.test_loader:Loader',
     cmdclass={
         'test': SQLiteTest,
+        'test_on_postgres': PostgresTest,
     },
 )
