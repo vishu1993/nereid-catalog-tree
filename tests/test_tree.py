@@ -74,7 +74,6 @@ class TestTree(NereidTestCase):
             'application_user': USER,
             'default_locale': self.locale_en_us.id,
             'currencies': [('add', [usd.id])],
-            'root_tree_node': self.default_node,
         }])
 
     def setUp(self):
