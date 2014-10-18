@@ -10,10 +10,4 @@
             <field name="upcoming_products_node"/>
         </page>
     </xpath>
-    <xpath expr="/form/notebook/page[@id='catalog']" position="inside">
-        <group id="root_tree_node" colspan="2">
-            <label name="root_tree_node"/>
-            <field name="root_tree_node"/>
-        </group>
-    </xpath>
 </data>

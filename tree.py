@@ -18,6 +18,8 @@ from trytond.model import ModelView, ModelSQL, fields
 from trytond.exceptions import UserError
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
+from trytond.transaction import Transaction
+from trytond import backend
 from sql import Literal
 
 
@@ -374,10 +376,17 @@ class Website:
         'product.tree_node', 'Upcoming Products Node',
         domain=[('type_', '=', 'catalog')]
     )
-    root_tree_node = fields.Many2One(
-        "product.tree_node", 'Root Tree Node', select=True,
-        required=True
-    )
+
+    @classmethod
+    def __register__(cls, module_name):
+        TableHandler = backend.get('TableHandler')
+        cursor = Transaction().cursor
+        table = TableHandler(cursor, cls, module_name)
+
+        super(Website, cls).__register__(module_name)
+
+        if table.column_exist('root_tree_node'):
+            table.not_null_action('root_tree_node', action='remove')
 
 
 class WebsiteTreeNode(ModelSQL):
