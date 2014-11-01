@@ -134,5 +134,36 @@ and license terms.
         <field name="name">website_view_form</field>
     </record>
 
+    <record model="ir.ui.view" id="product_node_view_list">
+        <field name="model">product.product-product.tree_node</field>
+        <field name="type">tree</field>
+        <field name="name">product_node_list</field>
+    </record>
+
+    <record model="ir.action.act_window" id="act_rearrange_products">
+        <field name="name">Rearrange Products</field>
+        <field name="res_model">product.product-product.tree_node</field>
+        <field name="domain">[('node', '=', Eval('active_id'))]</field>
+    </record>
+
+    <record model="ir.action.keyword" id="act_rearrange_products_keyword1">
+        <field name="keyword">form_relate</field>
+        <field name="model">product.tree_node,-1</field>
+        <field name="action" ref="act_rearrange_products"/>
+    </record>
+
+    <record model="ir.ui.view" id="product_node_view_tree">
+        <field name="model">product.product-product.tree_node</field>
+        <field name="type">tree</field>
+        <field name="name">product_node_tree</field>
+    </record>
+
+    <record model="ir.action.act_window.view"
+          id="act_rearrange_products_view">
+        <field name="sequence" eval="10"/>
+        <field name="view" ref="product_node_view_tree"/>
+        <field name="act_window" ref="act_rearrange_products"/>
+    </record>
+
   </data>
 </tryton>
