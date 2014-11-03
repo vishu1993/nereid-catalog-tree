@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tree string="Product Tree Nodes" editable="top">
+    <field name="sequence" />
+    <field name="product" />
+    <field name="node" />
+</tree>
