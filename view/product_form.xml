@@ -2,7 +2,7 @@
 <data>
     <xpath expr="/form/notebook/page[@id=&quot;desc&quot;]" position="after">
         <page string="Tree Nodes" id="addl_info" >
-            <field name="nodes" colspan="4"/>
+            <field name="nodes" mode="tree" colspan="4" view_ids="nereid_catalog_tree.product_node_view_list" />
         </page>
     </xpath>
 </data>
