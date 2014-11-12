@@ -99,7 +99,8 @@ class TestTree(NereidTestCase):
         self.templates = {
             'catalog/node.html':
             '{{ products.count }}||' +
-            '{{ make_tree_crumbs(node=node)|join(", ", attribute="1") }}'
+            '{{ make_tree_crumbs(node=node)|join(", ", attribute="1") }}',
+            'product.jinja': "{{ node and node.name or 'no-node' }}",
         }
 
     def test_0005_test_view(self):
@@ -358,6 +359,69 @@ class TestTree(NereidTestCase):
                     [template2]
                 )
                 self.assertEqual(rv.data[0], '1')
+
+    def test_0035_product_render_method(self):
+        """
+        Check injection of node into template context on product rendering
+        """
+        Node = POOL.get('product.tree_node')
+
+        with Transaction().start(DB_NAME, USER, context=CONTEXT):
+            self.setup_defaults()
+            uom, = self.Uom.search([], limit=1)
+
+            values1 = {
+                'name': 'Product-1',
+                'category': self.category.id,
+                'type': 'goods',
+                'list_price': Decimal('10'),
+                'cost_price': Decimal('5'),
+                'default_uom': uom.id,
+                'products': [
+                    ('create', [{
+                        'uri': 'product-1',
+                        'displayed_on_eshop': True
+                    }])
+                ]
+            }
+
+            template1, = self.Template.create([values1])
+
+            node1, = Node.create([{
+                'name': 'Node1',
+                'type_': 'catalog',
+                'slug': 'node1',
+                'products': [('create', [
+                    {'product': product} for product in template1.products
+                ])]
+            }])
+
+            self.assert_(node1)
+
+            app = self.get_app()
+
+            with app.test_client() as c:
+                url = '/product/%s' % product.uri
+
+                # With no node argument
+                rv = c.get('%s' % url)
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, 'no-node')
+
+                # With one valid node
+                rv = c.get('%s?node=%d' % (url, node1))
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, node1.name)
+
+                # With one invalid node
+                rv = c.get('%s?node=999999' % url)
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, 'no-node')
+
+                # With one invalid node
+                rv = c.get('%s?node=sometext' % url)
+                self.assertEqual(rv.status_code, 200)
+                self.assertEqual(rv.data, 'no-node')
 
     def test_0040_create_product_with_parent_as_itself(self):
         """
