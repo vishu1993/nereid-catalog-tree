@@ -9,7 +9,7 @@
 
 '''
 
-from nereid import abort, render_template, route, url_for
+from nereid import abort, render_template, route, url_for, request
 from nereid.helpers import slugify, context_processor
 from nereid.contrib.pagination import QueryPagination
 from nereid.contrib.sitemap import SitemapIndex, SitemapSection
@@ -38,6 +38,25 @@ class Product:
         'product.product-product.tree_node',
         'product', 'Tree Nodes'
     )
+
+    @classmethod
+    @route('/product/<uri>')
+    @route('/product/<path:path>/<uri>')
+    def render(cls, uri, path=None):
+        """
+        If node is in the url arguments, translate that into an active record
+        of the node and send it in the context
+        """
+        rv = super(Product, cls).render(uri, path)
+
+        node = request.args.get('node', type=int)
+        if node:
+            try:
+                rv.context['node'], = Node.search([('id', '=', node)])
+            except ValueError:
+                pass
+
+        return rv
 
 
 class Node(ModelSQL, ModelView):
