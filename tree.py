@@ -8,7 +8,7 @@
     :license: GPLv3, see LICENSE for more details
 
 '''
-
+from werkzeug.exceptions import NotFound
 from nereid import abort, render_template, route, url_for, request
 from nereid.helpers import slugify, context_processor
 from nereid.contrib.pagination import QueryPagination
@@ -50,7 +50,7 @@ class Product:
         rv = super(Product, cls).render(uri, path)
 
         node = request.args.get('node', type=int)
-        if node:
+        if node and not isinstance(rv, NotFound):
             try:
                 rv.context['node'], = Node.search([('id', '=', node)])
             except ValueError:
