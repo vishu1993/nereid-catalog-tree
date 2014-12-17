@@ -1,0 +1,261 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:nereid.website,featured_products_node:"
+msgid "Featured Products Node"
+msgstr "Sonderartikel"
+
+msgctxt "field:nereid.website,latest_products_node:"
+msgid "Latest Products Node"
+msgstr "Neueste Artikel"
+
+msgctxt "field:nereid.website,root_tree_node:"
+msgid "Root Tree Node"
+msgstr "Wurzelknotenpunkt"
+
+msgctxt "field:nereid.website,upcoming_products_node:"
+msgid "Upcoming Products Node"
+msgstr "Kommende Artikel"
+
+msgctxt "field:nereid.website-product.tree_node,create_date:"
+msgid "Create Date"
+msgstr "Erstellungsdatum"
+
+msgctxt "field:nereid.website-product.tree_node,create_uid:"
+msgid "Create User"
+msgstr "Erstellt durch"
+
+msgctxt "field:nereid.website-product.tree_node,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:nereid.website-product.tree_node,node:"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "field:nereid.website-product.tree_node,rec_name:"
+msgid "Name"
+msgstr "Name"
+
+msgctxt "field:nereid.website-product.tree_node,website:"
+msgid "Website"
+msgstr "Website"
+
+msgctxt "field:nereid.website-product.tree_node,write_date:"
+msgid "Write Date"
+msgstr "Zuletzt geändert"
+
+msgctxt "field:nereid.website-product.tree_node,write_uid:"
+msgid "Write User"
+msgstr "Letzte Änderung durch"
+
+msgctxt "field:product.product,nodes:"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "field:product.product-product.tree_node,create_date:"
+msgid "Create Date"
+msgstr "Erstellungsdatum"
+
+msgctxt "field:product.product-product.tree_node,create_uid:"
+msgid "Create User"
+msgstr "Erstellt durch"
+
+msgctxt "field:product.product-product.tree_node,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:product.product-product.tree_node,node:"
+msgid "Node"
+msgstr "Knotenpunkt"
+
+msgctxt "field:product.product-product.tree_node,product:"
+msgid "Product"
+msgstr "Artikel"
+
+msgctxt "field:product.product-product.tree_node,rec_name:"
+msgid "Name"
+msgstr "Name"
+
+msgctxt "field:product.product-product.tree_node,write_date:"
+msgid "Write Date"
+msgstr "Zuletzt geändert"
+
+msgctxt "field:product.product-product.tree_node,write_uid:"
+msgid "Write User"
+msgstr "Letzte Änderung durch"
+
+msgctxt "field:product.tree_node,active:"
+msgid "Active"
+msgstr "Aktiv"
+
+msgctxt "field:product.tree_node,children:"
+msgid "Children"
+msgstr "Untergeordnet (Knotenpunkte)"
+
+msgctxt "field:product.tree_node,create_date:"
+msgid "Create Date"
+msgstr "Erstellungsdatum"
+
+msgctxt "field:product.tree_node,create_uid:"
+msgid "Create User"
+msgstr "Erstellt durch"
+
+msgctxt "field:product.tree_node,description:"
+msgid "Description"
+msgstr "Beschreibung"
+
+msgctxt "field:product.tree_node,display:"
+msgid "Display"
+msgstr "Anzeigen"
+
+msgctxt "field:product.tree_node,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:product.tree_node,image:"
+msgid "Image"
+msgstr "Bild"
+
+msgctxt "field:product.tree_node,image_preview:"
+msgid "Image Preview"
+msgstr "Vorschau"
+
+msgctxt "field:product.tree_node,left:"
+msgid "Left"
+msgstr "Links"
+
+msgctxt "field:product.tree_node,name:"
+msgid "Name"
+msgstr "Name"
+
+msgctxt "field:product.tree_node,parent:"
+msgid "Parent"
+msgstr "Übergeordnet (Knotenpunkt)"
+
+msgctxt "field:product.tree_node,products:"
+msgid "Products"
+msgstr "Artikel"
+
+msgctxt "field:product.tree_node,products_per_page:"
+msgid "Products per Page"
+msgstr "Artikel pro Seite"
+
+msgctxt "field:product.tree_node,rec_name:"
+msgid "Name"
+msgstr "Name"
+
+msgctxt "field:product.tree_node,right:"
+msgid "Right"
+msgstr "Rechts"
+
+msgctxt "field:product.tree_node,sequence:"
+msgid "Sequence"
+msgstr "Reihenfolge"
+
+msgctxt "field:product.tree_node,slug:"
+msgid "Slug"
+msgstr "Slug"
+
+msgctxt "field:product.tree_node,type_:"
+msgid "Type"
+msgstr "Typ"
+
+msgctxt "field:product.tree_node,write_date:"
+msgid "Write Date"
+msgstr "Zuletzt geändert"
+
+msgctxt "field:product.tree_node,write_uid:"
+msgid "Write User"
+msgstr "Letzte Änderung durch"
+
+msgctxt "model:ir.action,name:act_product_by_tree_node"
+msgid "Products By Tree Node"
+msgstr "Artikel nach Knotenpunkt"
+
+msgctxt "model:ir.action,name:act_rearrange_products"
+msgid "Rearrange Products"
+msgstr "Artikel neuordnen"
+
+msgctxt "model:ir.action,name:act_tree_node_list"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "model:ir.action,name:act_tree_node_tree"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt ""
+"model:ir.action.act_window.domain,name:action_tree_node_view_domain_active"
+msgid "Active"
+msgstr "Aktiv"
+
+msgctxt ""
+"model:ir.action.act_window.domain,name:action_tree_node_view_domain_disabled"
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+msgctxt "model:ir.ui.menu,name:menu_tree_node_list"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "model:ir.ui.menu,name:menu_tree_node_tree"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "model:nereid.website-product.tree_node,name:"
+msgid "Root Tree Nodes on a Website"
+msgstr "Wurzelknotenpunkte auf einer Website"
+
+msgctxt "model:product.product-product.tree_node,name:"
+msgid "This is the relation between a node in a tree"
+msgstr "Verbindung zwischen Artikeln und Knotenpunkten"
+
+msgctxt "model:product.tree_node,name:"
+msgid "Tree Node"
+msgstr "Knotenpunkt"
+
+msgctxt "selection:product.tree_node,display:"
+msgid "Product Templates"
+msgstr "Artikel"
+
+msgctxt "selection:product.tree_node,display:"
+msgid "Product Variants"
+msgstr "Varianten"
+
+msgctxt "selection:product.tree_node,type_:"
+msgid "Catalog"
+msgstr "Katalog"
+
+msgctxt "view:nereid.website:"
+msgid "Featured Nodes"
+msgstr "Sonderknotenpunkte"
+
+msgctxt "view:product.product-product.tree_node:"
+msgid "Product Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "view:product.product:"
+msgid "Tree Nodes"
+msgstr "Knotenpunkte"
+
+msgctxt "view:product.tree_node:"
+msgid "Children"
+msgstr "Untergeordnet (Knotenpunkte)"
+
+msgctxt "view:product.tree_node:"
+msgid "Description"
+msgstr "Bezeichnung"
+
+msgctxt "view:product.tree_node:"
+msgid "Image"
+msgstr "Bild"
+
+msgctxt "view:product.tree_node:"
+msgid "Product Tree Node"
+msgstr "Knotenpunkt"
+
+msgctxt "view:product.tree_node:"
+msgid "Product Tree Nodes"
+msgstr "Knotenpunkte"
