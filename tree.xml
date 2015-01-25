@@ -104,8 +104,7 @@ and license terms.
     <record model="ir.action.act_window" id="act_product_by_tree_node">
         <field name="name">Products By Tree Node</field>
         <field name="res_model">product.product</field>
-        <field name="context">{'nodes': [Eval('active_id')]}</field>
-        <field name="domain">[('nodes', '=', [Eval('active_id')])]</field>
+        <field name="domain">[('nodes.node', 'in', Eval('active_ids'))]</field>
     </record>
 
     <record model="ir.action.keyword" id="act_product_by_tree_node_keyword1">
