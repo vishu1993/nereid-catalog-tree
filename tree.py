@@ -177,6 +177,7 @@ class Node(ModelSQL, ModelView):
                 where=(
                     TemplateTable.active &
                     ProductTable.displayed_on_eshop &
+                    ProductTable.active &
                     (NodeTable.left >= Literal(self.left)) &
                     (NodeTable.right <= Literal(self.right))
                 ),
@@ -198,6 +199,7 @@ class Node(ModelSQL, ModelView):
                 where=(
                     TemplateTable.active &
                     ProductTable.displayed_on_eshop &
+                    ProductTable.active &
                     (NodeTable.left >= Literal(self.left)) &
                     (NodeTable.right <= Literal(self.right))
                 ),

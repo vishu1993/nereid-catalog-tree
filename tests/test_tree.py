@@ -284,6 +284,10 @@ class TestTree(NereidTestCase):
                     ('create', [{
                         'uri': 'product-3',
                         'displayed_on_eshop': False
+                    }, {
+                        'uri': 'product-3_2',
+                        'active': False,
+                        'displayed_on_eshop': True,
                     }])
                 ]
             }
