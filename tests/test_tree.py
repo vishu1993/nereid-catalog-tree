@@ -2,7 +2,7 @@
 """
 test_tree
 
-:copyright: (c) 2013-2014 by Openlabs Technologies & Consulting (P) Limited
+:copyright: (c) 2013-2015 by Openlabs Technologies & Consulting (P) Limited
 :license: BSD, see LICENSE for more details.
 """
 from decimal import Decimal
@@ -51,10 +51,8 @@ class TestTree(NereidTestCase):
 
         self.category, = self.Category.create([{
             'name': 'CategoryA',
-            'uri': 'category-1'
         }])
 
-        url_map, = self.UrlMap.search([], limit=1)
         en_us, = self.Language.search([('code', '=', 'en_US')])
 
         self.locale_en_us, = self.Locale.create([{
@@ -69,7 +67,6 @@ class TestTree(NereidTestCase):
 
         self.Site.create([{
             'name': 'localhost',
-            'url_map': url_map.id,
             'company': company.id,
             'application_user': USER,
             'default_locale': self.locale_en_us.id,
@@ -88,7 +85,6 @@ class TestTree(NereidTestCase):
         self.Product = POOL.get('product.product')
         self.Company = POOL.get('company.company')
         self.NereidUser = POOL.get('nereid.user')
-        self.UrlMap = POOL.get('nereid.url_map')
         self.Language = POOL.get('ir.lang')
         self.Party = POOL.get('party.party')
         self.Category = POOL.get('product.category')
@@ -345,8 +341,11 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test is if there are 3 products.
                 # 1 from node1 and 2 from node2
+                # Get the node record by searching it, because current one
+                # is cached.
+                node1, = Node.search([('id', '=', node1.id)])
                 self.assertEqual(
-                    node1.get_products().all_items(),
+                    node1.get_products(per_page=10).all_items(),
                     list(template1.products + template2.products)
                 )
                 self.assertEqual(rv.data[0], '3')
@@ -358,8 +357,9 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 # Test if products length is 1 as display of
                 # node2 is set to 'product.template'
+                node2, = Node.search([('id', '=', node2.id)])
                 self.assertEqual(
-                    node2.get_products().all_items(),
+                    Node(node2.id).get_products().all_items(),
                     [template2]
                 )
                 self.assertEqual(rv.data[0], '1')
@@ -513,6 +513,7 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 self.assertEqual(rv.data[0], '1')
 
+            node1, = Node.search([('id', '=', node1.id)])
             self.assertEqual(node1.get_products().count, 1)
             self.assertEqual(len(node1.products), 1)
 
@@ -524,6 +525,7 @@ class TestTree(NereidTestCase):
                 self.assertEqual(rv.status_code, 200)
                 self.assertEqual(rv.data[0], '0')
 
+            node1, = Node.search([('id', '=', node1.id)])
             self.assertEqual(node1.get_products().count, 0)
             self.assertEqual(len(node1.products), 1)
 
@@ -713,6 +715,9 @@ class TestTree(NereidTestCase):
             self.assert_(node1)
             self.assert_(node2)
 
+            node1, = Node.search([('id', '=', node1.id)])
+            node2, = Node.search([('id', '=', node2.id)])
+
             self.assertEqual(
                 node1.get_products().items(),
                 [prod4, prod1]
@@ -764,6 +769,8 @@ class TestTree(NereidTestCase):
             }])
 
             self.assert_(node1)
+
+            node1, = Node.search([('id', '=', node1.id)])
 
             self.assertEqual(len(node1.get_products().all_items()), 100)
             self.assertEqual(node1.get_products().count, 100)
