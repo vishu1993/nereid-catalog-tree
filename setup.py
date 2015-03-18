@@ -114,10 +114,10 @@ setup(
         'trytond.modules.nereid_catalog_tree.tests',
     ],
     package_data={
-        'trytond.modules.nereid_catalog_tree': info.get('xml', [])
-        + info.get('translation', [])
-        + ['tryton.cfg', 'locale/*.po', 'tests/*.rst', '*.odt']
-        + ['view/*.xml']
+        'trytond.modules.nereid_catalog_tree': info.get('xml', []) +
+        info.get('translation', []) +
+        ['tryton.cfg', 'locale/*.po', 'tests/*.rst', '*.odt'] +
+        ['view/*.xml']
     },
     classifiers=[
         'Development Status :: 4 - Beta',
